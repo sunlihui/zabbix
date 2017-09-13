@@ -1,0 +1,38 @@
+percona 监控mysql 
+1.客户端上安装必要组件：
+wget https://www.percona.com/downloads/percona-monitoring-plugins/1.1.6/percona-zabbix-templates-1.1.6-1.noarch.rpm &&rpm -ivh percona-zabbix-templates-1.1.6-1.noarch.rpm && yum install -y php php-mysql
+
+2.编辑配置文件/usr/local/zabbix/etc/zabbix_agentd.conf
+
+添加如下配置：Include=/usr/local/zabbix/etc/zabbix_agentd.conf.d/
+
+移动配置文件到zabbix_agentd.conf.d目录下：
+mv /var/lib/zabbix/percona/templates/userparameter_percona_mysql.conf /usr/local/zabbix/etc/zabbix_agentd.conf.d/
+
+找到下面的行，添加mysql用户名和密码：
+vim /var/lib/zabbix/percona/scripts/get_mysql_stats_wrapper.sh
+RES=`HOME=~zabbix mysql -UZABBIXAGENT -PZABBIXAGENT -e 
+chua
+
+创建缓存临时文件：
+touch /tmp/$HOST-mysql_cacti_stats.txt 
+
+修改php配置文件 修改mysql账户密码和端口：
+$mysql_user = 'zabbixagent';
+$mysql_pass = 'zabbixagent';
+$mysql_port = 3306;
+
+重启zabbix_agentd: /etc/init.d/zabbix_agentd restart
+
+导入模板：在zabbix_server 模板中导入下面的xml文件，/var/lib/zabbix/percona/templates/zabbix_agent_template_percona_mysql_server_ht_2.0.9-sver1.1.6.xml
+
+3 测试：/usr/bin/php -q ss_get_mysql_stats.php --host localhost --items gg
+zabbix server测试：
+[root@server03 shells]# zabbix_get -s 192.168.50.100 -k MySQL.innodb-log-buffer-size
+8388608
+有数据即说明成功了
+
+
+
+
+
